@@ -68,6 +68,19 @@ def cfg(*, min_alert_value_usd=25.0, performance=False):
     return data
 
 
+def cooldown_event(*, price=100.0, edge_distance_pct=4.0, severity="warn"):
+    return {
+        "kind": "NEAR_RANGE_EDGE",
+        "severity": severity,
+        "position_id": "test-1",
+        "pool": "WHYPE/USDC 0.05%",
+        "detail": f"edge {edge_distance_pct}",
+        "price": price,
+        "edge_distance_pct": edge_distance_pct,
+        "status": "IN_RANGE",
+    }
+
+
 class TestPrjxLpMonitor(unittest.TestCase):
     def test_swap_topic_hash_is_32_bytes(self):
         self.assertEqual(len(prjx.SWAP_TOPIC0), 66)
@@ -190,6 +203,68 @@ class TestPrjxLpMonitor(unittest.TestCase):
             "下限割れ注意",
             prjx.vol_fit_text(position(lower_price=99.0, upper_price=130.0), forecast, ja=True),
         )
+
+    def test_cooldown_suppresses_small_repeat_event(self):
+        state = {}
+        send_cfg = {
+            "cooldown_bypass_price_move_pct": 2.0,
+            "cooldown_bypass_edge_move_pct": 1.0,
+            "cooldown_bypass_on_severity_escalation": True,
+        }
+
+        first = prjx.filter_events_for_cooldown([cooldown_event()], state, 180, send_cfg)
+        repeat = prjx.filter_events_for_cooldown(
+            [cooldown_event(price=100.5, edge_distance_pct=3.8)],
+            state,
+            180,
+            send_cfg,
+        )
+
+        self.assertEqual(len(first), 1)
+        self.assertEqual(repeat, [])
+
+    def test_cooldown_allows_material_move_bypass(self):
+        state = {}
+        send_cfg = {
+            "cooldown_bypass_price_move_pct": 2.0,
+            "cooldown_bypass_edge_move_pct": 1.0,
+            "cooldown_bypass_on_severity_escalation": True,
+        }
+
+        prjx.filter_events_for_cooldown([cooldown_event()], state, 180, send_cfg)
+        price_move = prjx.filter_events_for_cooldown(
+            [cooldown_event(price=102.1, edge_distance_pct=3.8)],
+            state,
+            180,
+            send_cfg,
+        )
+        edge_move = prjx.filter_events_for_cooldown(
+            [cooldown_event(price=102.2, edge_distance_pct=2.7)],
+            state,
+            180,
+            send_cfg,
+        )
+
+        self.assertEqual(price_move[0]["cooldown_override_reason"], "price_move")
+        self.assertEqual(edge_move[0]["cooldown_override_reason"], "edge_move")
+
+    def test_cooldown_allows_severity_escalation_bypass(self):
+        state = {}
+        send_cfg = {
+            "cooldown_bypass_price_move_pct": 2.0,
+            "cooldown_bypass_edge_move_pct": 1.0,
+            "cooldown_bypass_on_severity_escalation": True,
+        }
+
+        prjx.filter_events_for_cooldown([cooldown_event(severity="warn")], state, 180, send_cfg)
+        critical = prjx.filter_events_for_cooldown(
+            [cooldown_event(price=100.0, edge_distance_pct=4.0, severity="critical")],
+            state,
+            180,
+            send_cfg,
+        )
+
+        self.assertEqual(critical[0]["cooldown_override_reason"], "severity_escalation")
 
 
 if __name__ == "__main__":

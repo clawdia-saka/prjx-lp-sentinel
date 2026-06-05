@@ -1346,6 +1346,10 @@ def evaluate(positions: list[Position], cfg: dict[str, Any], state: dict[str, An
                     "position_id": pos.position_id,
                     "pool": pos.pool,
                     "detail": detail,
+                    "price": pos.price,
+                    "edge_distance_pct": edge_distance,
+                    "edge_name": edge_name,
+                    "status": status,
                 }
             )
 
@@ -1449,19 +1453,82 @@ def event_signature(event: dict[str, Any]) -> str:
     return hashlib.sha256(base.encode()).hexdigest()[:16]
 
 
-def filter_events_for_cooldown(events: list[dict[str, Any]], state: dict[str, Any], cooldown_minutes: int) -> list[dict[str, Any]]:
+def severity_rank(severity: str | None) -> int:
+    return {"info": 0, "warn": 1, "critical": 2}.get(str(severity or "").lower(), 0)
+
+
+def float_or_none(value: Any) -> float | None:
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def event_cooldown_record(event: dict[str, Any], sig: str, ts: int) -> dict[str, Any]:
+    return {
+        "signature": sig,
+        "ts": ts,
+        "severity": event.get("severity"),
+        "price": event.get("price"),
+        "edge_distance_pct": event.get("edge_distance_pct"),
+        "status": event.get("status"),
+    }
+
+
+def cooldown_bypass_reason(event: dict[str, Any], previous: dict[str, Any], send_cfg: dict[str, Any]) -> str | None:
+    """Return why an event should bypass cooldown, or None to suppress.
+
+    Normal near-edge noise is suppressed for the configured cooldown window, but
+    the user still wants a ping if the same LP keeps moving materially. Compare
+    against the last actually-sent event, not the last observed event.
+    """
+    if bool(send_cfg.get("cooldown_bypass_on_severity_escalation", True)):
+        if severity_rank(event.get("severity")) > severity_rank(previous.get("severity")):
+            return "severity_escalation"
+
+    price_threshold = float(send_cfg.get("cooldown_bypass_price_move_pct", 2.0) or 0)
+    prev_price = float_or_none(previous.get("price"))
+    current_price = float_or_none(event.get("price"))
+    if price_threshold > 0 and prev_price and current_price and prev_price > 0:
+        price_move_pct = abs(current_price / prev_price - 1.0) * 100.0
+        if price_move_pct >= price_threshold:
+            return "price_move"
+
+    edge_threshold = float(send_cfg.get("cooldown_bypass_edge_move_pct", 1.0) or 0)
+    prev_edge = float_or_none(previous.get("edge_distance_pct"))
+    current_edge = float_or_none(event.get("edge_distance_pct"))
+    if edge_threshold > 0 and prev_edge is not None and current_edge is not None:
+        if abs(current_edge - prev_edge) >= edge_threshold:
+            return "edge_move"
+
+    return None
+
+
+def filter_events_for_cooldown(
+    events: list[dict[str, Any]],
+    state: dict[str, Any],
+    cooldown_minutes: int,
+    send_cfg: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     now = int(time.time())
     cooldown = cooldown_minutes * 60
+    send_cfg = send_cfg or {}
     sent = state.setdefault("sent", {})
     filtered = []
     for event in events:
         key = f"{event['position_id']}:{event['kind']}"
         sig = event_signature(event)
         previous = sent.get(key, {})
-        if previous.get("signature") == sig and now - int(previous.get("ts", 0)) < cooldown:
+        within_cooldown = cooldown > 0 and now - int(previous.get("ts", 0)) < cooldown
+        bypass_reason = cooldown_bypass_reason(event, previous, send_cfg) if previous else None
+        if within_cooldown and not bypass_reason:
             continue
+        if bypass_reason:
+            event["cooldown_override_reason"] = bypass_reason
         filtered.append(event)
-        sent[key] = {"signature": sig, "ts": now}
+        sent[key] = event_cooldown_record(event, sig, now)
     return filtered
 
 
@@ -1582,7 +1649,7 @@ def main() -> int:
 
     cooldown_minutes = int(send_cfg.get("cooldown_minutes", 60))
     if send_enabled:
-        new_events = filter_events_for_cooldown(events, state, cooldown_minutes)
+        new_events = filter_events_for_cooldown(events, state, cooldown_minutes, send_cfg)
     else:
         new_events = events
     if send_enabled or performance_enabled(cfg):

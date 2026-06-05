@@ -74,6 +74,24 @@ hermes send --to telegram "PRJX LP monitor test"
 Set `send.target` and `send.enabled` in `config/prjx_lp_monitor.json` after
 `hermes send --to telegram "PRJX LP monitor test"` works.
 
+To reduce alert fatigue while still paging on material moves, configure a
+cooldown with bypass thresholds:
+
+```json
+"send": {
+  "enabled": true,
+  "target": "telegram",
+  "cooldown_minutes": 180,
+  "cooldown_bypass_price_move_pct": 2.0,
+  "cooldown_bypass_edge_move_pct": 1.0,
+  "cooldown_bypass_on_severity_escalation": true
+}
+```
+
+During the cooldown window, repeat events for the same LP/kind are suppressed
+unless price moves by at least the configured percent, edge distance changes by
+at least the configured percentage points, or severity escalates.
+
 Use `language: "ja"` for Japanese Telegram/report text. For a specific Telegram
 chat, use a local-only target such as:
 
