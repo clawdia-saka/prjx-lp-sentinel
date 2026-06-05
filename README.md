@@ -1,23 +1,41 @@
 # PRJX LP Sentinel
 
-Read-only Hermes skill and watchdog script for Project X / PRJX concentrated
+Read-only standard-library Python watchdog for Project X / PRJX concentrated
 liquidity on HyperEVM.
 
 It monitors a configured Project X LP wallet for:
 
 - LP range exits
-- near-range-edge rebalance signals
+- near-range-edge manual rebalance review signals
 - value-aware alert muting for dust positions via `thresholds.min_alert_value_usd`
 - collectable fee estimates via read-only `eth_call` simulation
-- recent Swap-rate overlay from pool `Swap` logs (`eth_getLogs`, same event data shown by HyperEVMScan)
+- recent Swap-rate overlay from pool `Swap` logs (`eth_getLogs`, the same event stream shown by HyperEVMScan)
 - Telegram-friendly card formatting with emoji, blank-line cards, and action-first copy
 - observed-baseline profit %, daily average %, and APR estimates
-- read-only VIX / BitVol-context HYPE range bands and LP forecast-fit labels
+- read-only VIX / DVOL context HYPE range bands and LP forecast-fit labels
 - impermanent-loss estimates
 - ROI summaries when cost basis is configured
-- Telegram alerts through `hermes send`
+- optional Telegram alerts through `hermes send`
 
-## Quick Check
+The current project is a monitor and decision-support tool. It does **not** sign
+transactions, submit transactions, auto-rebalance, mint, burn, swap, or move
+funds.
+
+## Privacy and safety
+
+Do not commit your live wallet configuration.
+
+- The tracked example config uses the zero address as a placeholder.
+- Copy `config/prjx_lp_monitor.example.json` to `config/prjx_lp_monitor.json` for local use.
+- `config/prjx_lp_monitor.json`, `config/*.local.json`, and `.state/` are gitignored.
+- Keep wallet-specific cost basis, alert targets, and observed baseline state local.
+- Store any sensitive operational credentials outside the repository.
+
+This repository is not financial advice. Any range changes, exits, entries, or
+rebalances should be reviewed manually unless you have built and audited a
+separate execution layer with explicit approvals and risk limits.
+
+## Quick check
 
 Run offline with the bundled sample:
 
@@ -31,13 +49,21 @@ Create a local config for live monitoring:
 cp config/prjx_lp_monitor.example.json config/prjx_lp_monitor.json
 ```
 
-Run live on HyperEVM:
+Edit the local-only config:
+
+```json
+"wallet": "YOUR_WALLET_ADDRESS_HERE"
+```
+
+Run live on HyperEVM without sending alerts:
 
 ```bash
 python3 scripts/prjx_lp_monitor.py --config config/prjx_lp_monitor.json --no-send
 ```
 
-## Enable Telegram Alerts
+The script uses only Python's standard library.
+
+## Optional Telegram alerts
 
 First confirm Hermes can send:
 
@@ -48,7 +74,14 @@ hermes send --to telegram "PRJX LP monitor test"
 Set `send.target` and `send.enabled` in `config/prjx_lp_monitor.json` after
 `hermes send --to telegram "PRJX LP monitor test"` works.
 
-Set `language` to `ja` for Japanese Telegram/report text.
+Use `language: "ja"` for Japanese Telegram/report text. For a specific Telegram
+chat, use a local-only target such as:
+
+```text
+telegram:<chat_id>
+```
+
+## Performance metrics
 
 Enable observed performance metrics with:
 
@@ -63,7 +96,7 @@ Enable observed performance metrics with:
 `auto_baseline` stores the first observed equity in `.state/` and reports
 profit/APR from that observation point. It is not historical deposit cost basis.
 
-Optional Swap overlay:
+## Swap-rate overlay
 
 ```json
 "pricing": {
@@ -76,16 +109,13 @@ Optional Swap overlay:
 }
 ```
 
-The overlay reads recent pool `Swap` events with read-only `eth_getLogs`, which is
-the same on-chain event stream exposed by HyperEVMScan. HyperEVM public RPC caps
-log queries at 1000 blocks, so keep `max_block_range` at or below 1000 and avoid
-large lookbacks on short cron intervals. The local live config uses
-`https://rpc.hypurrscan.io` because the official `rpc.hyperliquid.xyz/evm`
-endpoint rate-limited repeated onchain smoke tests. The script throttles RPC
+The overlay reads recent pool `Swap` events with read-only `eth_getLogs`. HyperEVM
+public RPC providers can cap log queries, so keep `max_block_range` at or below
+1000 and avoid large lookbacks on short cron intervals. The script throttles RPC
 calls to 0.25s apart by default; override with
 `PRJX_LP_RPC_MIN_INTERVAL_SECONDS` only if needed.
 
-Optional volatility forecast overlay:
+## Volatility forecast overlay
 
 ```json
 "vol_forecast": {
@@ -108,7 +138,7 @@ Telegram output is formatted as cards:
 - action-first line in each position: `🧭 判断: ...`
 - separate price, Swap, range, forecast fit, PnL, APR, IL, and token composition lines
 
-## Hermes Cron
+## Hermes cron
 
 ```bash
 mkdir -p ~/.hermes/scripts
@@ -123,8 +153,12 @@ hermes cron create "3-53/10 * * * *" \
 Keep the cron job no-agent. The script sends Telegram only when alert events are
 new after cooldown, so normal runs stay quiet.
 
-If `hermes cron list` says the gateway is not running, start it with:
+## Roadmap
 
-```bash
-hermes gateway install
-```
+See [ROADMAP.md](ROADMAP.md) for the staged plan: better Chinin-style alert
+quality, volatility-aware range decisioning, paper LP operations, APR/IL/fee
+optimization, and strictly gated future execution adapters.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

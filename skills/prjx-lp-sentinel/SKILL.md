@@ -64,10 +64,6 @@ Optional volatility/range forecast sources:
 - Yahoo `^VIX` daily close as broader risk context.
 
 See `references/vol-range-forecast-overlay.md` before adding or modifying range-forecast logic.
-API/source for BitVol-style and related market-regime data.
-
-The script also supports a snapshot JSON source for dry runs and for cases where
-an indexer or PRJX API is preferred.
 
 ## Files
 
@@ -116,7 +112,7 @@ Use `language: "ja"` for Japanese Telegram/report text.
 For a specific Telegram chat, use a target like:
 
 ```text
-telegram:-1001234567890
+telegram:<chat_id>
 ```
 
 ## Cron Recipe
@@ -170,7 +166,7 @@ because this skill does not trade.
 For missing cost basis, prefer an observed-baseline mode over pretending to know
 the historical deposit cost. With `performance.enabled=true` and
 `performance.auto_baseline=true`, the script stores the first observed
-`value + collectable fees + rewards` per token ID in `.state/` and reports:
+`value + collectable fees + rewards` per position ID in `.state/` and reports:
 
 - `観測原価` / observed basis
 - `実利` / profit amount and percent since observation
@@ -202,13 +198,13 @@ HyperEVM public RPC rejects log ranges over 1000 blocks, so keep
 rate limits. The script throttles RPC calls to 0.25s apart by default; override
 `PRJX_LP_RPC_MIN_INTERVAL_SECONDS` only if operational testing shows it is safe.
 If the official `https://rpc.hyperliquid.xyz/evm` endpoint rate-limits repeated
-onchain smokes or `eth_getLogs`, `https://rpc.hypurrscan.io` is a working chain
-999 alternative observed on tetsu's Mac.
+onchain smokes or `eth_getLogs`, try another reputable chain 999 RPC provider
+and verify with `--no-send` before re-enabling alerts.
 
 ## ROI and IL Notes
 
 ROI is only as good as the cost basis in config. If no `cost_basis_usd` override
-exists for a token ID, the script reports `ROI n/a`.
+exists for a position ID, the script reports `ROI n/a`.
 
 Impermanent loss is an estimate based on entry price versus current price:
 
@@ -222,12 +218,12 @@ precision matters.
 
 ## Common Pitfalls
 
-1. **No token IDs found.** Confirm the wallet owns Project X position NFTs on the
+1. **No position IDs found.** Confirm the wallet owns Project X position NFTs on the
    configured Position Manager. Some closed positions may have zero liquidity or
    may have been transferred.
 
 2. **ROI is missing.** Add `cost_basis_usd`, `fees_usd`, and `rewards_usd` under
-   `position_overrides` for the token ID.
+   `position_overrides` for the position ID.
 
 3. **Too many Telegram messages.** Increase `send.cooldown_minutes`, set
    `thresholds.min_alert_value_usd` to mute dust positions, or set `send.enabled`
@@ -244,7 +240,7 @@ precision matters.
 - [ ] `python3 scripts/prjx_lp_monitor.py --config config/prjx_lp_monitor.json --no-send` runs.
 - [ ] The wallet address is correct.
 - [ ] Position Manager address is correct for Project X.
-- [ ] Active token IDs match Project X / PRJX portfolio UI.
+- [ ] Active position IDs match Project X / PRJX portfolio UI.
 - [ ] Range status matches PRJX UI for at least one position.
 - [ ] Cost-basis overrides are populated for ROI-critical positions.
 - [ ] `thresholds.min_alert_value_usd` is high enough to avoid dust-position spam without hiding material positions.
