@@ -1,0 +1,54 @@
+{
+  "wallet": "0x0000000000000000000000000000000000000000",
+  "language": "ja",
+  "source": "onchain",
+  "onchain": {
+    "chain_id": 999,
+    "rpc_url": "https://rpc.hyperliquid.xyz/evm",
+    "position_manager": "0xead19ae861c29bbb2101e834922b2feee69b9091",
+    "factory": "",
+    "max_positions": 80,
+    "include_zero_liquidity": false
+  },
+  "snapshot": {
+    "path": "examples/prjx_lp_positions.sample.json"
+  },
+  "thresholds": {
+    "near_range_edge_pct": 5.0,
+    "impermanent_loss_pct": -3.0,
+    "roi_pct": -5.0,
+    "min_alert_value_usd": 25.0
+  },
+  "pricing": {
+    "stable_symbols": ["USDC", "USDT", "USDT0", "USD0", "USDe"],
+    "usd_prices": {
+      "HYPE": 0
+    },
+    "swap_rate_overlay": {
+      "enabled": true,
+      "lookback_blocks": 1000,
+      "max_block_range": 1000,
+      "deviation_warn_pct": 2.0
+    }
+  },
+  "performance": {
+    "enabled": true,
+    "auto_baseline": true,
+    "min_apr_days": 1.0
+  },
+  "vol_forecast": {
+    "enabled": true,
+    "days": 120,
+    "timeout_seconds": 6
+  },
+  "position_overrides": {},
+  "state": {
+    "path": ".state/prjx_lp_monitor_state.json"
+  },
+  "send": {
+    "enabled": false,
+    "target": "telegram",
+    "cooldown_minutes": 60,
+    "subject": "[PRJX LP]"
+  }
+}
