@@ -102,7 +102,10 @@ If that works, enable sending in `config/prjx_lp_monitor.json`:
   "send": {
     "enabled": true,
     "target": "telegram",
-    "cooldown_minutes": 60
+    "cooldown_minutes": 180,
+    "cooldown_bypass_price_move_pct": 2.0,
+    "cooldown_bypass_edge_move_pct": 1.0,
+    "cooldown_bypass_on_severity_escalation": true
   }
 }
 ```
@@ -229,7 +232,12 @@ precision matters.
 
 3. **Too many Telegram messages.** Increase `send.cooldown_minutes`, set
    `thresholds.min_alert_value_usd` to mute dust positions, or set `send.enabled`
-   to false while tuning thresholds.
+   to false while tuning thresholds. If the user wants fewer repeat pings but
+   still wants material deterioration, use a cooldown bypass pattern: store the
+   last actually-sent event's `price`, `edge_distance_pct`, and `severity`, then
+   suppress repeat events during cooldown unless price moved by at least
+   `send.cooldown_bypass_price_move_pct`, edge distance changed by at least
+   `send.cooldown_bypass_edge_move_pct`, or severity escalated.
 
 4. **Wrong range display.** Token order matters. Prices are shown as
    `token1 per token0`, adjusted for decimals.

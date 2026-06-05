@@ -48,7 +48,10 @@
   "send": {
     "enabled": false,
     "target": "telegram",
-    "cooldown_minutes": 60,
-    "subject": "[PRJX LP]"
+    "cooldown_minutes": 180,
+    "subject": "[PRJX LP]",
+    "cooldown_bypass_price_move_pct": 2.0,
+    "cooldown_bypass_edge_move_pct": 1.0,
+    "cooldown_bypass_on_severity_escalation": true
   }
 }
