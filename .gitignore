@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+*.pyc
+.state/
+config/prjx_lp_monitor.json
+config/*.local.json

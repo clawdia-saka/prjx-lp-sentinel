@@ -1,0 +1,43 @@
+{
+  "wallet": "0x0000000000000000000000000000000000000000",
+  "positions": [
+    {
+      "position_id": "sample-1",
+      "pool": "WHYPE/USDC 0.05%",
+      "token0_symbol": "WHYPE",
+      "token1_symbol": "USDC",
+      "tick": -33700,
+      "tick_lower": -35000,
+      "tick_upper": -33000,
+      "price": 34.25,
+      "lower_price": 30.05,
+      "upper_price": 36.72,
+      "amount0": 12.4,
+      "amount1": 410.1,
+      "value_usd": 835.0,
+      "cost_basis_usd": 820.0,
+      "fees_usd": 18.2,
+      "rewards_usd": 4.6,
+      "entry_price": 32.0
+    },
+    {
+      "position_id": "sample-2",
+      "pool": "PRJX/WHYPE 0.30%",
+      "token0_symbol": "PRJX",
+      "token1_symbol": "WHYPE",
+      "tick": -21000,
+      "tick_lower": -20500,
+      "tick_upper": -19000,
+      "price": 0.122,
+      "lower_price": 0.128,
+      "upper_price": 0.149,
+      "amount0": 9200,
+      "amount1": 0,
+      "value_usd": 690.0,
+      "cost_basis_usd": 760.0,
+      "fees_usd": 7.0,
+      "rewards_usd": 0,
+      "entry_price": 0.141
+    }
+  ]
+}
