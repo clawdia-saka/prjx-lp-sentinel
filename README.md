@@ -155,9 +155,10 @@ new after cooldown, so normal runs stay quiet.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the staged plan: better Chinin-style alert
-quality, volatility-aware range decisioning, paper LP operations, APR/IL/fee
-optimization, and strictly gated future execution adapters.
+See [ROADMAP.md](ROADMAP.md) for the staged plan: better ActionBrief alert
+quality, volatility-aware range decisioning, Polymarket source-reliability
+research, paper LP operations, APR/IL/fee optimization, and strictly gated future
+execution adapters.
 
 ## License
 

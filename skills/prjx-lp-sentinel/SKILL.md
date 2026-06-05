@@ -178,7 +178,7 @@ summary first, then one card per LP NFT, separated by blank lines for Telegram
 readability. Use emojis for fast scanning (🟢 normal, 🟡 manual review,
 🔴 out-of-range), and make the action line explicit near the top (`🧭 判断:
 手動リバランス確認` or `🧭 判断: 監視継続`). Alert messages should start with an
-action-first / "チンインコピー" style block: `🎯 先に結論` + `👉 今やること`, and
+ActionBrief block: `🎯 先に結論` + `👉 今やること`, and
 must state that there is no automatic execution. Keep price, recent Swap, range,
 forecast fit, PnL, APR, IL, and token composition on separate lines. When
 `vol_forecast.enabled=true`, include the read-only VIX/BitVol-context forecast
