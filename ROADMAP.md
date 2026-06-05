@@ -13,7 +13,7 @@ Status: current baseline.
 - Keep live wallet config and local state out of Git.
 - Provide privacy guidance, CI, and scanner checks for public use.
 
-## Phase 1 - Chinin-style alert quality
+## Phase 1 - ActionBrief alert quality
 
 Goal: make alerts more useful before adding new risk.
 
@@ -55,7 +55,39 @@ Exit criteria:
 - Forecast output remains clearly labeled as decision support.
 - No wallet signing or transaction submission exists.
 
-## Phase 3 - Paper LP operator
+## Phase 3 - Prediction-market source reliability
+
+Goal: test whether prediction markets can be used as a read-only information
+source before they influence LP decisions.
+
+Inputs to evaluate:
+
+- Polymarket short-interval BTC markets, including 5-minute markets when active
+  and adjacent 15-minute markets when they are the active short-interval product.
+- Market probability snapshots before close: early, mid-window, and final-minute.
+- Liquidity, spread, volume, and order-book depth at each snapshot.
+- Post-close settlement state from Polymarket/Gamma after the result is final.
+
+Outputs:
+
+- Reliability ledger with market ID, question, close time, observed probability,
+  final outcome, settlement time, and scoring notes.
+- Calibration metrics such as Brier score and bucketed win rate.
+- Source-quality rank by market family: A/B/C/D based on sample size, liquidity,
+  spread, settlement clarity, and post-resolution accuracy.
+- Decision-support labels only: useful signal, weak signal, noisy, or ignore.
+
+Exit criteria:
+
+- Settled outcomes are joined only after markets are closed/resolved.
+- No unresolved target/outcome leakage is used in live alerts.
+- Polymarket remains a read-only context source, not an execution trigger.
+- Any LP action recommendation can still be explained without relying solely on
+  prediction-market prices.
+
+See [docs/polymarket-source-reliability.md](docs/polymarket-source-reliability.md).
+
+## Phase 4 - Paper LP operator
 
 Goal: simulate LP entries, exits, and range updates before any live execution.
 
@@ -72,7 +104,7 @@ Exit criteria:
 - Paper/live readiness flags are explicit and default false.
 - APR optimization is evaluated after costs, not just fee APR.
 
-## Phase 4 - Human-approved execution adapter design
+## Phase 5 - Human-approved execution adapter design
 
 Goal: design, not enable by default, an execution adapter for users who explicitly
 want live operations.
@@ -94,7 +126,7 @@ Exit criteria:
 - Live execution cannot happen accidentally from default config.
 - Every live action has a signed approval record and rollback/containment plan.
 
-## Phase 5 - Guarded automation research
+## Phase 6 - Guarded automation research
 
 Goal: explore whether limited automation is justified after the previous phases.
 
