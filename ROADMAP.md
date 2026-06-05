@@ -55,35 +55,53 @@ Exit criteria:
 - Forecast output remains clearly labeled as decision support.
 - No wallet signing or transaction submission exists.
 
-## Phase 3 - Prediction-market source reliability
+## Phase 3 - Topic and prediction-market source reliability
 
-Goal: test whether prediction markets can be used as a read-only information
-source before they influence LP decisions.
+Goal: test whether topic feeds, public news sources, and prediction markets can
+be used as read-only information sources before they influence decision-support
+context for LP review.
 
 Inputs to evaluate:
 
 - Polymarket short-interval BTC markets, including 5-minute markets when active
   and adjacent 15-minute markets when they are the active short-interval product.
+- CB Terminal topics from `https://cb-terminal.dev/api/topics`, including topic
+  type, importance score, source URLs, and pagination cursor.
+- Other public news sources such as crypto/macro RSS feeds, official project or
+  regulator posts, economic-calendar releases, and source-backed social leads.
+- User-relevant topic families: crypto market regime, DeFi/LP/on-chain risk,
+  prediction-market industry, macro/rates/FX/geopolitics, AI/GPU/infrastructure,
+  Japan/WebX/crypto policy, and Project X / PRJX / Hyperliquid context.
 - Market probability snapshots before close: early, mid-window, and final-minute.
 - Liquidity, spread, volume, and order-book depth at each snapshot.
 - Post-close settlement state from Polymarket/Gamma after the result is final.
 
 Outputs:
 
+- Topic ledger with CB Terminal topic ID, title, type, importance score, source
+  URLs, assigned family, relevance label, corroboration state, and linked market
+  IDs.
 - Reliability ledger with market ID, question, close time, observed probability,
   final outcome, settlement time, and scoring notes.
-- Calibration metrics such as Brier score and bucketed win rate.
-- Source-quality rank by market family: A/B/C/D based on sample size, liquidity,
-  spread, settlement clarity, and post-resolution accuracy.
-- Decision-support labels only: useful signal, weak signal, noisy, or ignore.
+- Calibration metrics such as Brier score and bucketed win rate for markets.
+- Topic/source-quality metrics such as time-to-confirmation, corroboration count,
+  false-positive rate, duplicate/noise rate, and relevance precision.
+- Source-quality rank by market or topic family: A/B/C/D based on sample size,
+  liquidity or source quality, spread/timeliness, settlement clarity, and
+  post-resolution accuracy.
+- Decision-support labels only: high relevance, watch, background, useful signal,
+  weak signal, noisy, or ignore.
 
 Exit criteria:
 
 - Settled outcomes are joined only after markets are closed/resolved.
+- Topic/news outcomes are scored only after official confirmation or another
+  concrete observable result exists.
 - No unresolved target/outcome leakage is used in live alerts.
-- Polymarket remains a read-only context source, not an execution trigger.
+- Polymarket and topic feeds remain read-only context sources, not execution
+  triggers.
 - Any LP action recommendation can still be explained without relying solely on
-  prediction-market prices.
+  prediction-market prices or a single news/topic source.
 
 See [docs/polymarket-source-reliability.md](docs/polymarket-source-reliability.md).
 
