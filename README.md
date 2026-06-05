@@ -155,7 +155,7 @@ new after cooldown, so normal runs stay quiet.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the staged plan: better ActionBrief alert
+See [ROADMAP.md](ROADMAP.md) for the staged plan: signal-indicator alert
 quality, volatility-aware range decisioning, topic/news and Polymarket
 source-reliability research, paper LP operations, APR/IL/fee optimization, and
 strictly gated future execution design.
