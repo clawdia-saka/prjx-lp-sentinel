@@ -13,19 +13,25 @@ Status: current baseline.
 - Keep live wallet config and local state out of Git.
 - Provide privacy guidance, CI, and scanner checks for public use.
 
-## Phase 1 - ActionBrief alert quality
+## Phase 1 - Signal-indicator alert quality
 
-Goal: make alerts more useful before adding new risk.
+Goal: make alerts more useful by computing explicit indicator states before
+rendering human-facing alert text.
 
-- Improve action-first Japanese and English alert copy.
+- Define structured indicator states such as quiet, watch, attention, review,
+  critical, stale, and blocked.
+- Derive alerts from indicator rows that include score, evidence, source quality,
+  freshness, dedupe key, cooldown key, and recommended manual action.
 - Reduce alert fatigue with better cooldown, materiality, and deduplication.
 - Track manual outcomes: ignored, reviewed, rebalanced, exited, widened, narrowed.
 - Measure precision and recall against manually labeled outcomes.
 - Add fixtures for edge cases: dust positions, stale prices, zero-liquidity NFTs,
-  out-of-range positions, missing swap logs, and inconsistent RPC responses.
+  out-of-range positions, missing swap logs, conflicting indicator inputs, and
+  inconsistent RPC responses.
 
 Exit criteria:
 
+- Alerts are backed by an auditable indicator state, not copy style alone.
 - Alerts explain the next manual decision in one glance.
 - False-positive and false-negative rates are measured on historical runs.
 - No automated execution path exists.

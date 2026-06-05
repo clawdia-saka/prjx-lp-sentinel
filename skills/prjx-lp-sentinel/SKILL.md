@@ -177,13 +177,15 @@ Format Telegram output as readable cards, not pipe-dense one-liners: portfolio
 summary first, then one card per LP NFT, separated by blank lines for Telegram
 readability. Use emojis for fast scanning (🟢 normal, 🟡 manual review,
 🔴 out-of-range), and make the action line explicit near the top (`🧭 判断:
-手動リバランス確認` or `🧭 判断: 監視継続`). Alert messages should start with an
-ActionBrief block: `🎯 先に結論` + `👉 今やること`, and
-must state that there is no automatic execution. Keep price, recent Swap, range,
-forecast fit, PnL, APR, IL, and token composition on separate lines. When
-`vol_forecast.enabled=true`, include the read-only VIX/BitVol-context forecast
-section (HYPE p75/p90 bands, DVOL/VIX context, `自動リバランスなし`) in the
-portfolio card.
+手動リバランス確認` or `🧭 判断: 監視継続`). Alert messages should be derived
+from a structured signal-indicator row first: state, score, evidence, freshness,
+source quality, dedupe/cooldown key, and recommended manual action. The rendered
+Telegram message should then show the indicator state, the reason, the next
+manual action, and that there is no automatic execution. Keep price, recent Swap,
+range, volatility, impermanent-loss, and APR facts separate so operator evidence
+is machine-readable and not just prose. When `vol_forecast.enabled=true`, include
+the read-only VIX/BitVol-context forecast section (HYPE p75/p90 bands, DVOL/VIX
+context, `自動リバランスなし`) in the portfolio card.
 
 The collectable fee estimate uses read-only `eth_call` simulation of the NFPM
 `collect` method with no transaction submission or signing. Label this as an
